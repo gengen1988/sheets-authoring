@@ -11,7 +11,7 @@ async function main() {
     await require('./tasks/clean')()
     await require('./tasks/preprocess')()
     await require('./tasks/generate')()
-    // await require('./tasks/copy')()
+    await require('./tasks/copy')()
 }
 
 main()
