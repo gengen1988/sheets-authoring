@@ -26,7 +26,7 @@ module.exports = async function () {
             if (code === 0) {
                 resolve()
             } else {
-                reject(new Error(`Process exited with code ${code}`))
+                reject(new Error(`Code geneneration failed (${code})`))
             }
         })
     })

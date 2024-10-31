@@ -1,7 +1,7 @@
 #!/bin/bash
 
 WORKSPACE=.
-LUBAN_DLL=$WORKSPACE/../Luban/Luban.dll
+LUBAN_DLL=$WORKSPACE/../../Luban/Luban.dll
 
 dotnet $LUBAN_DLL \
     -t all \
