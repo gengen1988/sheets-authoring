@@ -9,4 +9,4 @@ dotnet $LUBAN_DLL \
     -d json \
     --conf $WORKSPACE/luban.conf \
     -x outputCodeDir=$WORKSPACE/Output/Scripts \
-    -x outputDataDir=$WORKSPACE/Output/Data
+    -x outputDataDir=$WORKSPACE/Output/Tables

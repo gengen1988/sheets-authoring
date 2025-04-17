@@ -49,5 +49,5 @@ build/
 Luban/
 data/*
 !data/.gitkeep
-luban-project/Data
+luban-project/Input
 luban-project/Output

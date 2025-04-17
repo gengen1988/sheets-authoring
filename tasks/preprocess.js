@@ -4,8 +4,8 @@ const XLSX = require('xlsx')
 const registry = require('../processors')
 
 const DEFINITION_COLUMN = 0
-const SRC = 'data'
-const DEST = 'luban-project/Data'
+const SRC_DIRECTORY = 'data'
+const DEST_DIRECTORY = 'luban-project/Input'
 
 async function walk(dir) {
     const entries = await fs.readdir(dir, { withFileTypes: true })
@@ -106,13 +106,16 @@ function processSheet(worksheet, processorRegistry) {
 }
 
 module.exports = async function preprocess() {
-    const files = await walk(SRC)
-    const filteredFiles = files.filter(file => path.extname(file).toLowerCase() === '.xlsx')
-    for (const file of filteredFiles) {
+    const files = await walk(SRC_DIRECTORY)
+    const filteredFiles = files.filter(file => {
+        const ext = path.extname(file).toLowerCase()
+        return ext === '.ods' || ext === '.xlsx'
+    })
+    for (const filePath of filteredFiles) {
         try {
-            const data = await fs.readFile(file)
+            const data = await fs.readFile(filePath)
             const originWorkbook = XLSX.read(data)
-            const saveAsOrigin = XLSX.utils.book_new()
+            const newWorkbook = XLSX.utils.book_new()
             for (const sheetName of originWorkbook.SheetNames) {
                 const worksheet = originWorkbook.Sheets[sheetName]
                 processSheet(worksheet, registry)
@@ -121,8 +124,8 @@ module.exports = async function preprocess() {
                     XLSX.utils.book_append_sheet(saveAsNew, worksheet, sheetName)
 
                     // Get relative path and construct destination path for the separated file
-                    const relativePath = path.relative(SRC, file)
-                    const separatedPath = path.join(DEST, path.dirname(relativePath), sheetName + '.xlsx')
+                    const relativePath = path.relative(SRC_DIRECTORY, filePath)
+                    const separatedPath = path.join(DEST_DIRECTORY, path.dirname(relativePath), sheetName + '.xlsx')
 
                     // Ensure destination directory exists
                     await fs.mkdir(path.dirname(separatedPath), { recursive: true })
@@ -131,33 +134,40 @@ module.exports = async function preprocess() {
                     const separatedOutput = XLSX.write(saveAsNew, { type: 'buffer', bookType: 'xlsx' })
                     await fs.writeFile(separatedPath, separatedOutput)
 
-                    console.log(`Separated ${sheetName} from ${file} to ${separatedPath}`)
+                    console.log(`Separated ${sheetName} from ${filePath} to ${separatedPath}`)
                 }
                 else {
-                    XLSX.utils.book_append_sheet(saveAsOrigin, worksheet, sheetName)
+                    XLSX.utils.book_append_sheet(newWorkbook, worksheet, sheetName)
                 }
             }
 
             // Only save if workbook has sheets
-            if (saveAsOrigin.SheetNames.length == 0) {
+            if (newWorkbook.SheetNames.length == 0) {
                 continue
             }
 
             // Get relative path and construct destination path
-            const relativePath = path.relative(SRC, file)
-            const destPath = path.join(DEST, relativePath)
+            const relativePath = path.relative(SRC_DIRECTORY, filePath)
+            const newPath = makeLubanFilePath(relativePath)
+            const destPath = path.join(DEST_DIRECTORY, newPath)
 
             // Ensure destination directory exists
             await fs.mkdir(path.dirname(destPath), { recursive: true })
 
             // Write the workbook to destination
-            const output = XLSX.write(saveAsOrigin, { type: 'buffer', bookType: 'xlsx' })
+            const output = XLSX.write(newWorkbook, { type: 'buffer', bookType: 'xlsx' })
             await fs.writeFile(destPath, output)
 
-            console.log(`Processed ${file}`)
+            console.log(`Processed ${filePath}`)
 
         } catch (err) {
-            console.error(`Error processing ${file}:`, err)
+            console.error(`Error processing ${filePath}:`, err)
         }
     }
+}
+
+function makeLubanFilePath(filePath) {
+    const dirname = path.dirname(filePath)
+    const basename = path.basename(filePath, path.extname(filePath))
+    return path.join(dirname, '#' + basename + '.xlsx')
 }

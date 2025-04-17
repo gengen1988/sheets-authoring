@@ -1,8 +1,10 @@
 const fs = require('fs/promises')
 const path = require('path')
 
-const src = 'luban-project/Output'
-const dest = '../Assets/LubanGenerated'
+const scriptsSrc = 'luban-project/Output/Scripts'
+const scriptsDest = '../Assets/LubanGeneratedScripts'
+const tablesSrc = 'luban-project/Output/Tables'
+const tablesDest = '../Assets/StreamingAssets/Tables'
 
 // Copy files recursively
 async function copyDir(srcDir, destDir) {
@@ -24,9 +26,14 @@ async function copyDir(srcDir, destDir) {
 module.exports = async function () {
     try {
         // Create destination directory if it doesn't exist
-        await fs.mkdir(dest, { recursive: true })
-        await copyDir(src, dest)
-        console.log(`Copied ${src} to ${dest}`)
+        await fs.mkdir(scriptsDest, { recursive: true })
+        await copyDir(scriptsSrc, scriptsDest)
+        console.log(`Copied ${scriptsSrc} to ${scriptsDest}`)
+
+        await fs.mkdir(tablesDest, { recursive: true })
+        await copyDir(tablesSrc, tablesDest)
+        console.log(`Copied ${tablesSrc} to ${tablesDest}`)
+        
     } catch (err) {
         console.error('Error copying directory:', err)
     }

@@ -1,9 +1,10 @@
 const fs = require('fs/promises')
 
 const dirs = [
-    'luban-project/Data',
-    'luban-project/Output',
-    '../Assets/LubanGenerated',
+    'luban-project/Scripts',
+    'luban-project/Input',
+    '../Assets/LubanGeneratedScripts',
+    '../Assets/StreamingAssets/Tables'
 ]
 
 module.exports = async function () {
